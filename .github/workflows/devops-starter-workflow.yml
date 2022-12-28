@@ -19,11 +19,10 @@ jobs:
     name: Build and Run tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
+        python-version: '3.8'
 
     - name: Install Dependancies
       continue-on-error: false
@@ -141,18 +140,17 @@ jobs:
     runs-on: windows-latest
     needs: Deploy
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
+        python-version: '3.8'
 
     # Run functional tests
     - name: Run Functional tests
       continue-on-error: false
       run: |
         mkdir functionaltestresults
-        pip install wheel && pip install selenium && pip install pytest==4.6.11 && cd ./Tests && python -m pytest functional_tests/ --webAppUrl=https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/ --junitxml=../functionaltestresults/functional-test-results.xml
+        pip install wheel && pip install selenium==3.141.0 && pip install pytest==4.6.11 && cd ./Tests && python -m pytest functional_tests/ --webAppUrl=https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/ --junitxml=../functionaltestresults/functional-test-results.xml
 
     # Uploading functional test results to artifact store
     - name: Upload functional test results to Artifact
