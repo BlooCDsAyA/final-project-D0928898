@@ -110,34 +110,58 @@ static BTreeNode* search(BTreeNode *root, int key, int *comparisons) {
 }
 
 int main() {
-    const int NUM_INSERT = 1000;
     const int NUM_SEARCH = 100;
     BTreeNode *root = NULL;
-    srand(42);
-    int keys[NUM_INSERT];
-    for (int i = 0; i < NUM_INSERT; ++i) {
-        int key = rand() % 5000 + 1; // random customer ID
-        keys[i] = key;
-        insert(&root, key);
+    FILE *fp = fopen("BTreeC/customers.csv", "r");
+    if (!fp) {
+        perror("customers.csv");
+        return 1;
     }
+    int capacity = 1024;
+    int *keys = (int*)malloc(sizeof(int) * capacity);
+    if (!keys) {
+        fprintf(stderr, "Memory allocation failed\n");
+        fclose(fp);
+        return 1;
+    }
+    int num_keys = 0;
+    int id;
+    while (fscanf(fp, "%d", &id) == 1) {
+        if (num_keys == capacity) {
+            capacity *= 2;
+            int *tmp = realloc(keys, sizeof(int) * capacity);
+            if (!tmp) {
+                fprintf(stderr, "Memory allocation failed\n");
+                free(keys);
+                fclose(fp);
+                return 1;
+            }
+            keys = tmp;
+        }
+        keys[num_keys++] = id;
+        insert(&root, id);
+    }
+    fclose(fp);
 
+    srand(42);
     int total_comparisons = 0;
     clock_t start = clock();
-    for (int i = 0; i < NUM_SEARCH; ++i) {
-        int idx = rand() % NUM_INSERT;
+    for (int i = 0; i < NUM_SEARCH && num_keys > 0; ++i) {
+        int idx = rand() % num_keys;
         int comparisons = 0;
         search(root, keys[idx], &comparisons);
         total_comparisons += comparisons;
     }
     clock_t end = clock();
 
-    double avg_comp = (double)total_comparisons / NUM_SEARCH;
+    double avg_comp = num_keys ? (double)total_comparisons / NUM_SEARCH : 0;
     double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    double avg_time = elapsed / NUM_SEARCH;
+    double avg_time = NUM_SEARCH ? elapsed / NUM_SEARCH : 0;
 
     printf("Average comparisons: %.2f\n", avg_comp);
     printf("Average search time: %.6f seconds\n", avg_time);
 
+    free(keys);
     return 0;
 }
 
