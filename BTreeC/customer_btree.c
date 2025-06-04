@@ -1,8 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "btree.h"
+#include <stdbool.h>
+#include <time.h>
 
-BTreeNode* create_node(bool leaf) {
+#define ORDER 4
+
+typedef struct BTreeNode {
+    int keys[ORDER - 1];
+    struct BTreeNode *children[ORDER];
+    int count;         // number of keys
+    bool leaf;         // true if node is leaf
+} BTreeNode;
+
+static BTreeNode* create_node(bool leaf) {
     BTreeNode* node = (BTreeNode*)malloc(sizeof(BTreeNode));
     node->leaf = leaf;
     node->count = 0;
@@ -62,7 +72,7 @@ static void insert_nonfull(BTreeNode *node, int key) {
     }
 }
 
-void insert(BTreeNode **root, int key) {
+static void insert(BTreeNode **root, int key) {
     if (*root == NULL) {
         *root = create_node(true);
         (*root)->keys[0] = key;
@@ -83,7 +93,7 @@ void insert(BTreeNode **root, int key) {
     }
 }
 
-BTreeNode* search(BTreeNode *root, int key, int *comparisons) {
+static BTreeNode* search(BTreeNode *root, int key, int *comparisons) {
     int i = 0;
     while (i < root->count && key > root->keys[i]) {
         (*comparisons)++;
@@ -96,7 +106,38 @@ BTreeNode* search(BTreeNode *root, int key, int *comparisons) {
     }
     if (root->leaf)
         return NULL;
-    else
-        return search(root->children[i], key, comparisons);
+    return search(root->children[i], key, comparisons);
+}
+
+int main() {
+    const int NUM_INSERT = 1000;
+    const int NUM_SEARCH = 100;
+    BTreeNode *root = NULL;
+    srand(42);
+    int keys[NUM_INSERT];
+    for (int i = 0; i < NUM_INSERT; ++i) {
+        int key = rand() % 5000 + 1; // random customer ID
+        keys[i] = key;
+        insert(&root, key);
+    }
+
+    int total_comparisons = 0;
+    clock_t start = clock();
+    for (int i = 0; i < NUM_SEARCH; ++i) {
+        int idx = rand() % NUM_INSERT;
+        int comparisons = 0;
+        search(root, keys[idx], &comparisons);
+        total_comparisons += comparisons;
+    }
+    clock_t end = clock();
+
+    double avg_comp = (double)total_comparisons / NUM_SEARCH;
+    double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+    double avg_time = elapsed / NUM_SEARCH;
+
+    printf("Average comparisons: %.2f\n", avg_comp);
+    printf("Average search time: %.6f seconds\n", avg_time);
+
+    return 0;
 }
 
