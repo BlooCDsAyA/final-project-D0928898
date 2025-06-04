@@ -1,5 +1,6 @@
 /*
  * Generate 1,000,000 unique customer records and write to customers.csv.
+ * Output uses UTF-8 with BOM so spreadsheets keep phone numbers as text.
  * CustomerID range is 1,000,000~9,999,999 to allow one million unique values.
  */
 #include <stdio.h>
@@ -43,6 +44,9 @@ int main(void) {
         return 1;
     }
 
+    /* Write UTF-8 BOM for Excel compatibility */
+    fputs("\xEF\xBB\xBF", fp);
+
     /* Prepare pool of IDs and shuffle */
     int range_size = ID_END - ID_START + 1;
     int *ids = malloc(sizeof(int) * range_size);
@@ -74,7 +78,7 @@ int main(void) {
         snprintf(email, sizeof(email), "%s%d@example.com", name, ids[i]);
         snprintf(phone, sizeof(phone), "09%08d", rand() % 100000000);
 
-        fprintf(fp, "%d,%s,%d,%s,%s\n", ids[i], name, age, email, phone);
+        fprintf(fp, "%d,%s,%d,%s,=\"%s\"\n", ids[i], name, age, email, phone);
     }
 
     free(ids);
