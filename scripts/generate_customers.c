@@ -69,16 +69,16 @@ int main(void) {
     char email[32];
     char phone[12];
 
-    for (int i = 0; i < TOTAL_CUSTOMERS; ++i) {
+    for (int i = 1; i <= TOTAL_CUSTOMERS; ++i) {
         int name_len = 5 + rand() % 6; /* 5-10 letters */
         random_string(name, name_len);
 
         int age = 18 + rand() % 82; /* 18-99 */
 
-        snprintf(email, sizeof(email), "%s%d@example.com", name, ids[i]);
+        snprintf(email, sizeof(email), "%s%d@example.com", name, ids[i-1]);
         snprintf(phone, sizeof(phone), "09%08d", rand() % 100000000);
 
-        fprintf(fp, "%d,%s,%d,%s,=\"%s\"\n", ids[i], name, age, email, phone);
+        fprintf(fp, "%d,%s,%d,%s,=\"%s\"\n", ids[i-1], name, age, email, phone);
     }
 
     free(ids);
