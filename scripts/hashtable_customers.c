@@ -122,7 +122,8 @@ int main(void) {
         total_time += micros;
     }
 
-    printf("Average search time (microseconds): %.2f\n", total_time / 100.0);
+    double avg_sec = (total_time / 100.0) / 1000000.0;
+    printf("Average search time: %.6f seconds\n", avg_sec);
 
     free(ids);
     /* free hash table */
